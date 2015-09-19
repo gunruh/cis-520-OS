@@ -1,0 +1,19 @@
+squish-pty bochs -q
+========================================================================
+                       Bochs x86 Emulator 2.4.5
+              Build from CVS snapshot, on April 25, 2010
+========================================================================
+PiLo hda1
+Loading..........
+Kernel command line: run alarm-mega
+Pintos booting with 4,096 kB RAM...
+383 pages available in kernel pool.
+383 pages available in user pool.
+Calibrating timer...  204,600 loops/s.
+Boot complete.
+Executing 'alarm-mega':
+Kernel PANIC at ../../tests/threads/tests.c:62 in run_test(): no test named "alarm-mega"
+Call stack: 0xc0027fee.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.

@@ -1,0 +1,1 @@
+The alarm-mega program was made based off of the alarm-multiple program, simply calling the alarm function 70 times. In order to run, it was added into tests.c, tests.h, and elsewhere so that the system could be built again.  
