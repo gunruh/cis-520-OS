@@ -73,6 +73,11 @@ static void schedule (void);
 void thread_schedule_tail (struct thread *prev);
 static tid_t allocate_tid (void);
 
+/* Value_less function*/
+static bool value_less (const struct list_elem *, const struct list_elem *,
+                        void *);
+
+
 /* Initializes the threading system by transforming the code
    that's currently running into a thread.  This can't work in
    general and it is possible in this case only because loader.S
@@ -502,8 +507,26 @@ next_thread_to_run (void)
   if (list_empty (&ready_list))
     return idle_thread;
   else
-    return list_entry (list_pop_front (&ready_list), struct thread, elem);
+    // **** Attempt to prioritize scheduling here, 
+    // since this is where the next thread is chosen.**** 
+    list_elem highest_pri_thread = list_max (&ready_list, value_less, NULL);
+    return list_entry (highest_pri_thread, struct thread, elem);
+
+    // Old Code:
+    // return list_entry (list_pop_front (&ready_list), struct thread, elem);
 }
+
+// Function used to test which thread has lesser priority
+static bool
+value_less (const struct list_elem *a_, const struct list_elem *b_,
+            void *aux UNUSED)
+	    {
+	      const struct thread *a = list_entry (a_, struct thread, priority);
+	      const struct thread *b = list_entry (b_, struct thread, priority);
+
+	      return a->priority < b->priority;
+	    }
+		  
 
 /* Completes a thread switch by activating the new thread's page
    tables, and, if the previous thread is dying, destroying it.
@@ -562,15 +585,15 @@ static void
 schedule (void) 
 {
   struct thread *cur = running_thread ();
-  struct thread *next = next_thread_to_run ();
+  struct thread *next = next_thread_to_run (); // Pops thread from readyList
   struct thread *prev = NULL;
 
-  ASSERT (intr_get_level () == INTR_OFF);
-  ASSERT (cur->status != THREAD_RUNNING);
-  ASSERT (is_thread (next));
+  ASSERT (intr_get_level () == INTR_OFF); // Make sure interrupts are OFF
+  ASSERT (cur->status != THREAD_RUNNING); // Current thread non 'RUNNING'
+  ASSERT (is_thread (next)); // Make sure next thread is in fact a thread.
 
-  if (cur != next)
-    prev = switch_threads (cur, next);
+  if (cur != next) // If current thread isn't the next thread to run
+    prev = switch_threads (cur, next); // then, switch to next thread
   thread_schedule_tail (prev);
 }
 
