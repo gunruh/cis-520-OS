@@ -90,18 +90,23 @@ timer_elapsed (int64_t then)
 void
 timer_sleep (int64_t ticks) 
 {
-  //int64_t start = timer_ticks ();
+ 
+   
+   ASSERT (intr_get_level () == INTR_ON);
+ //  sema_down(&waitSema);
+ //  thread_current()->timerTick = timer_ticks() + ticks;
+ //  thread_block();
+   //sema_down(&waitSema);
+ //  list_insert_ordered(&sleepList, &thread_current()->elem, compareList, NULL);
+   enum intr_level old_level = intr_disable();
+//  sema_down(&waitSema);
+   thread_current()->timerTick = timer_ticks() + ticks;
+   //list_insert_ordered(&waitSema.waiters, &thread_current()->elem, compareList, NULL);
+   list_insert_ordered(&sleepList, &thread_current()->elem, compareList, NULL);
+   thread_block();
+   intr_set_level(old_level);
+  sema_down(&waitSema);
 
-  ASSERT (intr_get_level () == INTR_ON);
-  //while (timer_elapsed (start) < ticks) 
-  //  thread_yield ();
-	if(ticks <= 0) return;
-
-	enum intr_level old_level = intr_disable();
-	thread_current()->timerTick = timer_ticks() + ticks;
-	list_insert_ordered(&sleepList, &thread_current()->elem, compareList, NULL);
-	thread_block();
-	intr_set_level(old_level);
 }
 
 /* Sleeps for approximately MS milliseconds.  Interrupts must be
@@ -178,17 +183,27 @@ timer_print_stats (void)
 static void
 timer_interrupt (struct intr_frame *args UNUSED)
 {
-  ticks++;
+   ticks++;
   thread_tick ();
-	struct list_elem *e;
-	for(e = list_begin(&sleepList); e!= list_end(&sleepList); e = list_begin(&sleepList)) {
-		struct thread *t = list_entry(e, struct thread, elem);
-		if(ticks < t->timerTick) {
-			break;
-		}
-		list_remove(e);
-		thread_unblock(t);
-	}
+   //Based off comments given in list.h
+ 
+   struct list_elem *e;
+   struct list semaWaitList;
+   list_init(&semaWaitList);
+   semaWaitList = waitSema.waiters;
+ //  sema_up(&waitSema);
+   for(e = list_begin(&sleepList); e!= list_end(&sleepList); e = list_begin(&sleepList)) {
+     struct thread *t = list_entry(e, struct thread, elem);
+    if(ticks < t->timerTick) break;
+ 
+ 
+
+     list_remove(e);
+     sema_up(&waitSema);
+     thread_unblock(t);
+   }
+ 
+
 }
 
 /* Returns true if LOOPS iterations waits for more than one timer
