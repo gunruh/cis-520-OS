@@ -73,10 +73,6 @@ static void schedule (void);
 void thread_schedule_tail (struct thread *prev);
 static tid_t allocate_tid (void);
 
-/* Value_less function*/
-static bool value_less (const struct list_elem *, const struct list_elem *,
-                        void *);
-
 
 /* Initializes the threading system by transforming the code
    that's currently running into a thread.  This can't work in
@@ -504,29 +500,30 @@ alloc_frame (struct thread *t, size_t size)
 static struct thread *
 next_thread_to_run (void) 
 {
+ struct list_elem *e;
   if (list_empty (&ready_list))
     return idle_thread;
   else{
     // **** Attempt to prioritize scheduling here, 
     // since this is where the next thread is chosen.**** 
   
-    return list_entry (list_max (&ready_list, value_less, NULL), struct thread, elem);
+   // return list_entry (list_max (&ready_list, value_less, NULL), struct thread, elem);
 
     // Old Code:
     // return list_entry (list_pop_front (&ready_list), struct thread, elem);
+
+    for (e = list_begin (&all_list); e!= list_end (&all_list); e=list_next(e))
+    	{
+	struct thread *t = list_entry (e, struct thread, allelem);
+	t->status = THREAD_READY;
+	if ( t-> priority > thread_current() -> priority) {
+		thread_yield();
+		}
+	
     }
+    return thread_current();
 }
-
-// Function used to test which thread has lesser priority
-static bool
-value_less (const struct list_elem *a_, const struct list_elem *b_,
-            void *aux UNUSED)
-	    {
-	      const struct thread *a = list_entry (a_, struct thread, elem);
-	      const struct thread *b = list_entry (b_, struct thread, elem);
-
-	      return a->priority < b->priority;
-	    }
+}
 		  
 
 /* Completes a thread switch by activating the new thread's page
