@@ -189,16 +189,6 @@ timer_interrupt (struct intr_frame *args UNUSED)
 		list_remove(e);
 		thread_unblock(t);
 	}
-/*	struct list_elem *e = list_begin(&sleepList);
-	while(e != list_end(&sleepList)) {
-		struct thread *t = list_entry(e, struct thread, elem);
-		if(ticks < t->timerTick) {
-			break;
-		}
-		list_remove(e);
-		thread_unblock(t);
-		e = list_begin(&sleepList);
-	}*/
 }
 
 /* Returns true if LOOPS iterations waits for more than one timer
