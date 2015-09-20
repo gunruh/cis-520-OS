@@ -506,7 +506,7 @@ next_thread_to_run (void)
 {
   if (list_empty (&ready_list))
     return idle_thread;
-  else
+  else{
     // **** Attempt to prioritize scheduling here, 
     // since this is where the next thread is chosen.**** 
     list_elem highest_pri_thread = list_max (&ready_list, value_less, NULL);
@@ -514,6 +514,7 @@ next_thread_to_run (void)
 
     // Old Code:
     // return list_entry (list_pop_front (&ready_list), struct thread, elem);
+    }
 }
 
 // Function used to test which thread has lesser priority
@@ -521,8 +522,8 @@ static bool
 value_less (const struct list_elem *a_, const struct list_elem *b_,
             void *aux UNUSED)
 	    {
-	      const struct thread *a = list_entry (a_, struct thread, priority);
-	      const struct thread *b = list_entry (b_, struct thread, priority);
+	      const struct thread *a = list_entry (a_, struct thread, elem);
+	      const struct thread *b = list_entry (b_, struct thread, elem);
 
 	      return a->priority < b->priority;
 	    }
