@@ -509,8 +509,8 @@ next_thread_to_run (void)
   else{
     // **** Attempt to prioritize scheduling here, 
     // since this is where the next thread is chosen.**** 
-    list_elem highest_pri_thread = list_max (&ready_list, value_less, NULL);
-    return list_entry (highest_pri_thread, struct thread, elem);
+  
+    return list_entry (list_max (&ready_list, value_less, NULL), struct thread, elem);
 
     // Old Code:
     // return list_entry (list_pop_front (&ready_list), struct thread, elem);
