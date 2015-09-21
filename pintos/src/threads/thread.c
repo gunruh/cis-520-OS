@@ -508,12 +508,14 @@ next_thread_to_run (void)
     return idle_thread;
   else{
     // **** Attempt to prioritize scheduling here, 
-    // since this is where the next thread is chosen.**** 
-  
-    return list_entry (list_max (&ready_list, value_less, NULL), struct thread, elem);
+    // since this is where the next thread is chosen.****
+      if (list_size(&ready_list) > 2)
+        return list_entry (list_remove(list_max(&ready_list, value_less, NULL)), struct thread, elem);
 
-    // Old Code:
-    // return list_entry (list_pop_front (&ready_list), struct thread, elem);
+      else{
+      // Old Code:
+        return list_entry (list_pop_front (&ready_list), struct thread, elem);
+      }
     }
 }
 
