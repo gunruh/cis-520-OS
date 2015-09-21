@@ -104,8 +104,9 @@ timer_sleep (int64_t ticks)
    //list_insert_ordered(&waitSema.waiters, &thread_current()->elem, compareList, NULL);
    list_insert_ordered(&sleepList, &thread_current()->elem, compareList, NULL);
    thread_block();
+   sema_down(&waitSema);
    intr_set_level(old_level);
-  sema_down(&waitSema);
+  
 
 }
 
