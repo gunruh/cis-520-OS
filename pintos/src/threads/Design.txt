@@ -83,7 +83,12 @@ By only adding one method, and only adding changes to two methods, this part of 
 >> `struct' member, global or static variable, `typedef', or
 >> enumeration.  Identify the purpose of each in 25 words or less.
 
+static bool value_less function: This function was copied from the list test and altered to test which thread has a lesser priority.
+
+
 >> B2: Explain the data structure used to track priority donation.
+
+For this we were planning to use a stack to keep track of the latest priority donated to a given thread. Once the thread releases the resource that the donor thread needed, the higher priority is popped of the stack and its priority will move back to what it was before the donation.
 
 
 ---- ALGORITHMS ----
@@ -91,11 +96,17 @@ By only adding one method, and only adding changes to two methods, this part of 
 >> B3: How do you ensure that the highest priority thread waiting for
 >> a lock, semaphore, or condition variable wakes up first?
 
+We would plan to wake the threads up on the blocked_list based on their priority level, and probably have a list of blocked threads for each lock, semaphore, or condition variable.
+
 >> B4: Describe the sequence of events when a call to lock_acquire()
 >> causes a priority donation.  How is nested donation handled?
 
+We believe it would first donate its priority to the thread the holds the lock, causing the lock-holder's priority to match the donor's priority. If that thread is also waiting for another lock, it donates its new priority to the thread holding the lock it is waiting for and so on. Once each thread releases their lock, they also decrease their priority back to what it was before the donation.
+
 >> B5: Describe the sequence of events when lock_release() is called
 >> on a lock that a higher-priority thread is waiting for.
+
+We think the thread that just released the lock should revert its priority back to what it was before it received a priority donation and then it would signal to the higher-priority thread that the lock has been released.
 
 ---- SYNCHRONIZATION ----
 
