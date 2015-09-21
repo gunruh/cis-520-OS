@@ -494,7 +494,7 @@ alloc_frame (struct thread *t, size_t size)
 
 /* Chooses and returns the next thread to be scheduled.  Should
    return a thread from the run queue, unless the run queue is
-   empty.  (If the running thread can continue running, then it
+  empty.  (If the running thread can continue running, then it
    will be in the run queue.)  If the run queue is empty, return
    idle_thread. */
 static struct thread *
@@ -511,21 +511,34 @@ next_thread_to_run (void)
 
     // Old Code:
     // return list_entry (list_pop_front (&ready_list), struct thread, elem);
-
-    for (e = list_begin (&all_list); e!= list_end (&all_list); e=list_next(e))
-    	{
-	struct thread *t = list_entry (e, struct thread, allelem);
-	t->status = THREAD_READY;
-	if ( t-> priority > thread_current() -> priority) {
-		thread_yield();
+/* return list_entry (list_pop_front (&ready_list), struct thread, elem);*/
+    struct list_elem *e;
+     if (list_empty (&ready_list)) return idle_thread;
+	else{
+		for (e = list_begin (&all_list); e!= list_end (&all_list); e=list_next(e)){
+			struct thread *t = list_entry (e, struct thread, allelem);
+			thread_yield_to_higher_priority ();
+			}
 		}
-	
-    }
-    return thread_current();
+	return thread_current();
 }
-}
-		  
+}		  
 
+void thread_yield_to_higher_priority (void)
+{
+	enum intr_level old_level = intr_disable ();
+	if (!list_empty (&ready_list)) {
+		struct thread *cur = thread_current ();
+		struct thread *max = list_entry (list_max (&ready_list, thread_lower_priority, NULL), struct thread, elem);
+		if (max->priority > cur->priority) {
+			if (intr_context ())
+				intr_yield_on_return ();
+			else
+				thread_yield ();
+		}
+	}
+	intr_set_level (old_level);
+}
 /* Completes a thread switch by activating the new thread's page
    tables, and, if the previous thread is dying, destroying it.
 

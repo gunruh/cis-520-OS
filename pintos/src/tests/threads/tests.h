@@ -7,6 +7,7 @@ typedef void test_func (void);
 
 extern test_func test_alarm_single;
 extern test_func test_alarm_multiple;
+extern test_func test_alarm_mega;
 extern test_func test_alarm_many;
 extern test_func test_alarm_simultaneous;
 extern test_func test_alarm_priority;
@@ -33,7 +34,6 @@ extern test_func test_mlfqs_fair_20;
 extern test_func test_mlfqs_nice_2;
 extern test_func test_mlfqs_nice_10;
 extern test_func test_mlfqs_block;
-
 
 void msg (const char *, ...);
 void fail (const char *, ...);

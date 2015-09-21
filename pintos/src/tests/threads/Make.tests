@@ -2,7 +2,7 @@
 
 # Test names.
 tests/threads_TESTS = $(addprefix tests/threads/,alarm-single		\
-alarm-many alarm-mega alarm-multiple alarm-simultaneous alarm-priority alarm-zero	\
+alarm-many alarm-multiple alarm-mega alarm-simultaneous alarm-priority alarm-zero	\
 alarm-negative priority-change priority-donate-one			\
 priority-donate-multiple priority-donate-multiple2			\
 priority-donate-nest priority-donate-sema priority-donate-lower		\
@@ -36,7 +36,6 @@ tests/threads_SRC += tests/threads/mlfqs-load-avg.c
 tests/threads_SRC += tests/threads/mlfqs-recent-1.c
 tests/threads_SRC += tests/threads/mlfqs-fair.c
 tests/threads_SRC += tests/threads/mlfqs-block.c
-
 
 MLFQS_OUTPUTS = 				\
 tests/threads/mlfqs-load-1.output		\
