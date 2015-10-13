@@ -85,7 +85,7 @@ syscall_handler (struct intr_frame *f UNUSED)
 	f->eax = sc->func (args[0], args[1], args[2]);
 	
 	
-	printf ("system call!\n");
+	//printf ("system call!\n");
   thread_exit ();
 }
 
