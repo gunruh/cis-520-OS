@@ -20,7 +20,7 @@
 
 static thread_func start_process NO_RETURN;
 static bool load (const char *cmdline, void (**eip) (void), void **esp);
-
+struct semaphore hold;
 /* Starts a new thread running a user program loaded from
    FILENAME.  The new thread may be scheduled (and may even exit)
    before process_execute() returns.  Returns the new process's
@@ -28,21 +28,43 @@ static bool load (const char *cmdline, void (**eip) (void), void **esp);
 tid_t
 process_execute (const char *file_name) 
 {
-  char *fn_copy;
-  tid_t tid;
+   char *fn_copy, *save_ptr;
+   tid_t tid;
+   sema_init(&hold, 0);
+    //pruitt added code
+ //  char *token;
+  //  char *rest = file_name;
+ 
+ //  while((token = strtok_r(rest, " ", &rest))) {
+ //    printf("token: %s\n", token);
+ //  }
+    /* Make a copy of FILE_NAME.
+       Otherwise there's a race between the caller and load(). */
+   fn_copy = palloc_get_page (0);
+   if (fn_copy == NULL)
+     return TID_ERROR;
+   strlcpy (fn_copy, file_name, PGSIZE);
+   strtok_r(fn_copy, " ", &save_ptr);
+     //added
 
-  /* Make a copy of FILE_NAME.
-     Otherwise there's a race between the caller and load(). */
-  fn_copy = palloc_get_page (0);
-  if (fn_copy == NULL)
-    return TID_ERROR;
-  strlcpy (fn_copy, file_name, PGSIZE);
+ //  for(token = strtok_r(fn_copy, " ", &save_ptr); token != NULL; token = strtok_r(NULL, " ", &save_ptr)) {
+ //      printf("'%s'\n", token);
+   
+ 
 
-  /* Create a new thread to execute FILE_NAME. */
-  tid = thread_create (file_name, PRI_DEFAULT, start_process, fn_copy);
-  if (tid == TID_ERROR)
-    palloc_free_page (fn_copy); 
+   
+   //cheanged thread_create(file_name to thread_create(token 
+   /* Create a new thread to execute FILE_NAME. */
+   tid = thread_create (fn_copy, PRI_DEFAULT, start_process, &save_ptr);
+   bool holdTry = sema_try_down(&hold);
+   if(holdTry) {
+     sema_down(&hold);
+      list_push_back(&thread_current()->children, &thread_current()->wait_status->elem);
+  }
+   if (tid == TID_ERROR)
+     palloc_free_page (fn_copy);
   return tid;
+
 }
 
 /* A thread function that loads a user process and starts it
@@ -53,19 +75,26 @@ start_process (void *file_name_)
   char *file_name = file_name_;
   struct intr_frame if_;
   bool success;
-
+  char *fn_copy, save_ptr;
   /* Initialize interrupt frame and load executable. */
   memset (&if_, 0, sizeof if_);
   if_.gs = if_.fs = if_.es = if_.ds = if_.ss = SEL_UDSEG;
   if_.cs = SEL_UCSEG;
   if_.eflags = FLAG_IF | FLAG_MBS;
   success = load (file_name, &if_.eip, &if_.esp);
-
+  sema_down(&hold);
+  if(success) {
+    lock_init(&thread_current()->wait_status->lock);
+    thread_current()->wait_status->ref_cnt = 2;
+    thread_current()->wait_status->tid = thread_current()->tid;
+    thread_current()->wait_status->exit_code = -1; 
+    sema_init(&thread_current()->wait_status->dead, 0); 
+  }
   /* If load failed, quit. */
   palloc_free_page (file_name);
   if (!success) 
-    thread_exit ();
-
+    thread_exit (); 
+  sema_up(&hold);
   /* Start the user process by simulating a return from an
      interrupt, implemented by intr_exit (in
      threads/intr-stubs.S).  Because intr_exit takes all of its
@@ -73,7 +102,8 @@ start_process (void *file_name_)
      we just point the stack pointer (%esp) to our stack frame
      and jump to it. */
   asm volatile ("movl %0, %%esp; jmp intr_exit" : : "g" (&if_) : "memory");
-  NOT_REACHED ();
+  NOT_REACHED (); 
+
 }
 
 /* Waits for thread TID to die and returns its exit status.  If
@@ -88,6 +118,10 @@ start_process (void *file_name_)
 int
 process_wait (tid_t child_tid UNUSED) 
 {
+   while(true) {
+      
+      
+   }
   return -1;
 }
 
@@ -220,6 +254,13 @@ load (const char *file_name, void (**eip) (void), void **esp)
   if (t->pagedir == NULL) 
     goto done;
   process_activate ();
+
+
+   char *fn_copy, *save_ptr;
+  fn_copy = palloc_get_page(0);
+  strlcpy(fn_copy, file_name, PGSIZE);
+  char *name = strtok_r(fn_copy, " ", &save_ptr);
+  file = filesys_open (name);
 
   /* Open executable file. */
   file = filesys_open (file_name);
@@ -437,7 +478,7 @@ setup_stack (void **esp)
     {
       success = install_page (((uint8_t *) PHYS_BASE) - PGSIZE, kpage, true);
       if (success)
-        *esp = PHYS_BASE;
+        *esp = PHYS_BASE - 12;
       else
         palloc_free_page (kpage);
     }
