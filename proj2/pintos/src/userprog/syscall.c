@@ -204,7 +204,9 @@ sys_wait (tid_t child)
 static int
 sys_create (const char *ufile, unsigned initial_size) 
 {
-  return 0;
+  char *tmp = copy_in_string(*ufile);
+  return process_execute(*tmp);
+  //return 0;
 }
  
 /* Remove system call. */
