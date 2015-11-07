@@ -49,8 +49,10 @@ page_for_addr (const void *address)
       e = hash_find (thread_current ()->pages, &p.hash_elem);
       if (e != NULL)
         return hash_entry (e, struct page, hash_elem);
-
+      
       /* No page.  Expand stack? */
+      
+      return page_allocate (p.addr, false);
 
 /* add code */
 
