@@ -72,7 +72,21 @@ we should allocate another page.
 >> `struct' member, global or static variable, `typedef', or
 >> enumeration.  Identify the purpose of each in 25 words or less.
 
+We didn't change or add any struct but used the mapping struct:
 
+struct mapping
+  {
+    struct list_elem elem;      /* List element. */
+    int handle;                 /* Mapping id. */
+    struct file *file;          /* File. */
+    uint8_t *base;              /* Start of memory mapping. */
+    size_t page_cnt;            /* Number of pages mapped. */
+  };
+
+  The purpose of this struct was to represent a mapping to physical memory.
+  This way we wouldn't need to locate the data in physical memory every time,
+  but rather, could just use the mapping struct to access the physical memory
+  and save information about it.
 
 ---- ALGORITHMS ----
 
@@ -80,14 +94,17 @@ we should allocate another page.
 >> memory subsystem.  Explain how the page fault and eviction
 >> processes differ between swap pages and other pages.
 
-
+Memory mapped files are used when we need to access something in physical memory.
+So like before a page is deallocated, for instance, we see if the pages are dirty
+and if so, write to the physical memory based on where the mapping tells us before
+deallocating the page memory.
 
 >> C3: Explain how you determine whether a new file mapping overlaps
 >> any existing segment.
 
-We loop and increment starting address of file mapping and check 
-whether the result (address) is found in page table with the 
-function pagedir_get_page (in userprog/pagedir.c).
+We believe we should use the function page_dir_get_page
+to see where the address is found and make sure it is within
+the page table.
 
 ---- RATIONALE ----
 
@@ -97,6 +114,10 @@ function pagedir_get_page (in userprog/pagedir.c).
 >> that much of their implementation can be shared.  Explain why your
 >> implementation either does or does not share much of the code for
 >> the two situations.
+
+Our code that writes back to the original files uses a similar principle
+as swap, but it uses the write_file_at function rather than block_write
+in order to write to the file at the memory mapped location.
 
 
 
@@ -112,14 +133,29 @@ the quarter.
 >> In your opinion, was this assignment, or any one of the three problems
 >> in it, too easy or too hard?  Did it take too long or too little time?
 
+I thought it was quite challenging, but not impossible to understand.
+Took a decent amount of time to understand my part, which was the unmap function.
+But I feel as though I learned a lot through figuring it out.
+
 >> Did you find that working on a particular part of the assignment gave
 >> you greater insight into some aspect of OS design?
+
+Yes, working on the system call to unmap helped me understand how the
+data is mapped back to physical memory.
 
 >> Is there some particular fact or hint we should give students in
 >> future quarters to help them solve the problems?  Conversely, did you
 >> find any of our guidance to be misleading?
 
+It took a long time to set up pintos from the original pintos3 directory
+we were given, so it would be nice to not have that overhead and just get
+into the project. But other than that, it seemed alright.
+
 >> Do you have any suggestions for the TAs to more effectively assist
 >> students, either for future quarters or the remaining projects?
+
+I haven't interacted with the TA this semester, but I think as far as
+general qualifications, the TA should have a good understanding of what's going on
+in operating systems and be able to understand aspects of the code in detail.
 
 >> Any other comments?
