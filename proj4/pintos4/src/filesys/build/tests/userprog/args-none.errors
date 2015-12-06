@@ -1,0 +1,5 @@
+Use of literal control characters in variable names is deprecated at /home/g/gunruh/cis520/cis-520-OS/pintos/src/utils/pintos line 909.
+Prototype mismatch: sub main::SIGVTALRM () vs none at /home/g/gunruh/cis520/cis-520-OS/pintos/src/utils/pintos line 933.
+Constant subroutine SIGVTALRM redefined at /home/g/gunruh/cis520/cis-520-OS/pintos/src/utils/pintos line 925.
+Can't exec "qemu": No such file or directory at /home/g/gunruh/cis520/cis-520-OS/pintos/src/utils/pintos line 921.
+command failed
