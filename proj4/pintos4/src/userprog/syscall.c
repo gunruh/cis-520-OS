@@ -654,9 +654,17 @@ sys_inumber (int handle)
 {
 
   // ADD AND MODIFY CODE HERE - call dir_get_inode() for directories
-
-  struct file_descriptor *fd = lookup_fd (handle);
-  struct inode *inode = file_get_inode (fd->file);
+  struct inode *inode;
+  if(sys_isdir(handle)) {
+    struct file_descriptor *fd = lookup_fd(handle);
+    inode = dir_get_inode(fd->dir);
+  }
+  else {
+   struct file_descriptor *fd = lookup_fd(handle);
+   inode = file_get_inode(fd->file);
+  }
+  //struct file_descriptor *fd = lookup_fd (handle);
+  //struct inode *inode = file_get_inode (fd->file);
   return inode_get_inumber (inode);
 }
  
